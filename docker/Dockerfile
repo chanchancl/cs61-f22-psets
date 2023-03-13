@@ -5,6 +5,19 @@ ARG TZ=America/New_York
 ENV TZ=${TZ}
 
 # include manual pages and documentation
+# update to install ca-certificates
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update &&\
+ yes | unminimize
+
+# used to connect tencentyun
+RUN apt-get -y install ca-certificates
+
+# replace apt source to tencentyun
+# copy new sources.list-x86
+COPY --chown=root:root sources.list-x86 /etc/apt/sources.list
+
+# update again with new source
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update &&\
  yes | unminimize
@@ -84,7 +97,8 @@ ENV LANG en_US.UTF-8
 RUN rm -r /var/lib/apt/lists/*
 
 # set up passwordless sudo for user cs61-user
-RUN useradd -m -s /bin/bash cs61-user && \
+ARG userid
+RUN useradd -u ${userid} -m -s /bin/bash cs61-user && \
  echo "cs61-user ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/cs61-init
 
 # create binary reporting version of dockerfile
